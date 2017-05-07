@@ -13,9 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -58,7 +60,8 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
     Switch geoInfoEnabledSwitch;
     @BindView(R.id.delete_button)
     Button deleteGeoInfoButton;
-
+    @BindView(R.id.time_unit_spinner)
+    Spinner timeUnitSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +74,6 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
         loadFromIntent();
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

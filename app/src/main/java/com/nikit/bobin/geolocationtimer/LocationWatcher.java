@@ -1,11 +1,15 @@
 package com.nikit.bobin.geolocationtimer;
 
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,8 +19,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -28,9 +30,6 @@ public class LocationWatcher extends Service
 
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
-    private LocationHelper locationHelper;
-    private HashSet<Long> lastNearGeoInfoIds;
-    private Date lastLocationUpdate;
 
     @Override
     public void onCreate() {
@@ -40,10 +39,9 @@ public class LocationWatcher extends Service
                 .addConnectionCallbacks(this)
                 .build();
 
-        locationHelper = new LocationHelper(this);
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(TimeUnit.SECONDS.toMillis(5));
-        //locationRequest.setFastestInterval(TimeUnit.SECONDS.toMillis(5));
+        locationRequest.setInterval(TimeUnit.MINUTES.toMillis(10));
+        locationRequest.setFastestInterval(TimeUnit.MINUTES.toMillis(2));
         Log.d("LocationWatcher", "onCreate");
     }
 
@@ -68,6 +66,7 @@ public class LocationWatcher extends Service
                     locationRequest,
                     this);
             Toast.makeText(this, "Succeed start location watch", Toast.LENGTH_SHORT).show();
+            createNotification(this, "Йопта", "Succeed start location watch");
         } catch (SecurityException e) {
             Log.d("LocationWatcher", "Could not start location watch");
             Toast.makeText(this, "Could not start location watch", Toast.LENGTH_SHORT).show();
@@ -81,43 +80,29 @@ public class LocationWatcher extends Service
     @Override
     public void onLocationChanged(Location location) {
         List<GeoInfo> geoInfos = GeoInfo.listAll(GeoInfo.class);
-        HashSet<Long> currentNearGeoInfoIds = new HashSet<>();
-        HashMap<Long, GeoInfo> supportHashMap = new HashMap<>();
+        Date now = DateHelper.now();
+        boolean anyEdit = false;
         for (GeoInfo geoInfo : geoInfos) {
+            if (!geoInfo.isEnabled()) {
+                geoInfo.setLastLocationUpdate(null);
+                geoInfo.save();
+                continue;
+            }
             float distance = location.distanceTo(geoInfo.getLocation());
             Log.d("LocationWatcher", geoInfo.getTitle() + " " + distance);
             if (distance < 100F) {
-                currentNearGeoInfoIds.add(geoInfo.getId());
-            }
-            supportHashMap.put(geoInfo.getId(), geoInfo);
-        }
-
-        Intent locationWatcherNotify = new Intent(BROADCAST_ACTION);
-        if (lastNearGeoInfoIds == null) {
-            if (currentNearGeoInfoIds.size() > 0)
-                lastNearGeoInfoIds = currentNearGeoInfoIds;
-            locationWatcherNotify.putExtra(BROADCAST_RES, false);
-        } else if (currentNearGeoInfoIds.size() == 0) {
-            lastNearGeoInfoIds = null;
-            locationWatcherNotify.putExtra(BROADCAST_RES, false);
-        } else {
-            Date now = DateHelper.now();
-            long delta = DateHelper.millisecondsBetween(now, lastLocationUpdate);
-            lastLocationUpdate = now;
-            boolean anyEdit = false;
-            for (Long geoInfoId : currentNearGeoInfoIds) {
-                if (lastNearGeoInfoIds.contains(geoInfoId)) {
-                    GeoInfo geoInfo = supportHashMap.get(geoInfoId);
-                    geoInfo.addSpendMilliseconds(delta);
-                    geoInfo.save();
+                if (geoInfo.setLastLocationUpdate(now)) {
                     anyEdit = true;
                 }
+                geoInfo.save();
+            } else {
+                geoInfo.setLastLocationUpdate(null);
             }
-            locationWatcherNotify.putExtra(BROADCAST_RES, anyEdit);
-            if (anyEdit)
-                logSpentTime();
         }
-
+        Intent locationWatcherNotify = new Intent(BROADCAST_ACTION);
+        locationWatcherNotify.putExtra(BROADCAST_RES, anyEdit);
+        if (anyEdit)
+            logSpentTime();
         sendBroadcast(locationWatcherNotify);
         Log.d("LocationWatcher", "sendBroadcast");
     }
@@ -128,7 +113,7 @@ public class LocationWatcher extends Service
         for (GeoInfo geoInfo : geoInfos) {
             stringBuilder.append(geoInfo.getTitle());
             stringBuilder.append(":");
-            stringBuilder.append(TimeUnit.MILLISECONDS.toMinutes(geoInfo.getSpentTimeMilliseconds()));
+            stringBuilder.append(DateUtils.formatElapsedTime(geoInfo.getSpentTimeSeconds()));
             stringBuilder.append(" minutes (");
             stringBuilder.append(geoInfo.getSpentTimeMilliseconds());
             stringBuilder.append(" milliseconds) \n");
@@ -140,5 +125,15 @@ public class LocationWatcher extends Service
     public void onDestroy() {
         super.onDestroy();
         Log.d("LocationWatcher", "onDestroy");
+    }
+
+    private void createNotification(Context context, String title, String text) {
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(text);
+        notificationManager.notify(11, builder.build());
     }
 }

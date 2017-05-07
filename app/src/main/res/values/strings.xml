@@ -16,4 +16,11 @@
     <string name="delete">Delete</string>
     <string name="test">test</string>
     <string name="title_activity_geo_info_list">GeoInfoListActivity</string>
+    <string-array name="time_units">
+        <item>Seconds</item>
+        <item>Minutes</item>
+        <item>Days</item>
+        <item>Weeks</item>
+        <item>Months</item>
+    </string-array>
 </resources>

@@ -1,6 +1,7 @@
 package com.nikit.bobin.geolocationtimer;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.orm.SugarRecord;
@@ -121,20 +122,20 @@ public class GeoInfo extends SugarRecord {
         return TimeUnit.MILLISECONDS.toSeconds(spentTime);
     }
 
-    public void addSpendMilliseconds(long milliseconds) {
-        if (milliseconds < 0)
-            throw new IllegalArgumentException("milliseconds should be positive, unlike: " + milliseconds);
-        spentTime += milliseconds;
-    }
-
     public Date getLastLocationUpdate() {
         return lastLocationUpdate;
     }
 
-    public void setLastLocationUpdate(Date lastLocationUpdate) {
+    public boolean setLastLocationUpdate(Date lastLocationUpdate) {
+        boolean result = false;
         if (this.lastLocationUpdate != null && lastLocationUpdate != null) {
-            
+            long delta = DateHelper.millisecondsBetween(
+                    lastLocationUpdate,
+                    this.lastLocationUpdate);
+            spentTime += delta;
+            result = true;
         }
         this.lastLocationUpdate = lastLocationUpdate;
+        return result;
     }
 }
