@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">GeolocationTimer</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="submit">Submit</string>
+    <string name="get_location">Get location</string>
+    <string name="save">Save</string>
+    <string name="title_activity_create_geo_info">CreateGeoInfoActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="location">Location</string>
+    <string name="period_days">Period (days)</string>
+    <string name="notify_than_period_ends">Notify than period ends  </string>
+    <string name="clear_timer_each_period">Clear timer each period</string>
+    <string name="enabled">Enabled</string>
+    <string name="title">Title</string>
+    <string name="id">Id</string>
+    <string name="delete">Delete</string>
+    <string name="test">test</string>
+    <string name="title_activity_geo_info_list">GeoInfoListActivity</string>
+</resources>

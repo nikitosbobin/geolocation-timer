@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.nikit.bobin.geolocationtimer.CreateGeoInfoActivity"
+    tools:showIn="@layout/activity_create_geo_info">
+    <RelativeLayout
+        android:id="@+id/rel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <DatePicker
+            android:id="@+id/datePicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <EditText
+            android:id="@+id/period_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:text="7"
+            android:inputType="numberDecimal"
+            android:hint="@string/period_days"
+            android:layout_marginTop="19dp"
+            android:layout_below="@+id/datePicker"
+            android:layout_alignStart="@+id/datePicker" />
+
+        <EditText
+            android:id="@+id/location_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:ems="10"
+            android:editable="false"
+            android:hint="@string/location"
+            android:layout_below="@+id/geo_info_title"
+            android:layout_alignStart="@+id/period_selector"
+            android:layout_alignEnd="@+id/geo_info_title" />
+
+        <Switch
+            android:id="@+id/notify_period_end_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/notify_than_period_ends"
+            android:layout_below="@+id/location_label"
+            android:layout_marginTop="28dp"
+            android:layout_alignStart="@+id/location_label"
+            android:layout_alignEnd="@+id/location_label" />
+
+        <Switch
+            android:id="@+id/clear_timer_each_period_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/notify_period_end_switch"
+            android:layout_marginTop="31dp"
+            android:text="@string/clear_timer_each_period"
+            android:layout_alignStart="@+id/notify_period_end_switch"
+            android:layout_alignEnd="@+id/notify_period_end_switch" />
+
+        <Button
+            android:id="@+id/save_geo_info_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="34dp"
+            android:layout_marginBottom="50dp"
+            android:text="@string/save"
+            android:layout_below="@+id/geo_info_enabled_switch"
+            android:layout_alignEnd="@+id/clear_timer_each_period_switch" />
+
+        <Switch
+            android:id="@+id/geo_info_enabled_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/enabled"
+            android:checked="true"
+            android:layout_below="@+id/clear_timer_each_period_switch"
+            android:layout_alignStart="@+id/clear_timer_each_period_switch"
+            android:layout_alignEnd="@+id/save_geo_info_button" />
+
+        <EditText
+            android:id="@+id/geo_info_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:hint="@string/title"
+            android:layout_marginTop="16dp"
+            android:layout_below="@+id/period_selector"
+            android:layout_alignStart="@+id/period_selector"
+            android:layout_alignEnd="@+id/datePicker" />
+
+        <Button
+            android:id="@+id/delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/save_geo_info_button"
+            android:layout_marginEnd="30dp"
+            android:layout_toStartOf="@+id/save_geo_info_button"
+            android:text="@string/delete" />
+    </RelativeLayout>
+</android.support.v4.widget.NestedScrollView>
