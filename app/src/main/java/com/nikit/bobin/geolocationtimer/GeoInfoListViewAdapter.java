@@ -66,15 +66,18 @@ public class GeoInfoListViewAdapter extends BaseAdapter {
         if (!item.isNotifyPeriodEnds() && !item.isClearTimerEachPeriod())
             holder.periodInfo.setVisibility(View.GONE);
         else {
-            int periodDays = item.getPeriodDays();
+            long periodMilliseconds = item.getPeriodMilliseconds();
             String periodStart = DateUtils.formatDateTime(
                     context,
                     item.getPeriodStart().getTime(),
                     0);
+            TimeUnitWithValue timeUnitWithValue =
+                    DateHelper.determineTimeUnit(periodMilliseconds);
             String format = String.format(
                     Locale.getDefault(),
-                    "Updates every %d days starts of %s",
-                    periodDays,
+                    "Updates every %d %ss starts of %s",
+                    timeUnitWithValue.getValue(),
+                    timeUnitWithValue.getTimeUnit().getTitle(),
                     periodStart);
             holder.periodInfo.setText(format);
         }

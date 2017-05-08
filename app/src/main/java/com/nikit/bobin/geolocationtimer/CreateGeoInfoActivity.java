@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -19,6 +21,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -139,7 +142,14 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
                 clearTimerEachPeriodSwitch.setChecked(geoInfo.isClearTimerEachPeriod());
                 notifyPeriodEndSwitch.setChecked(geoInfo.isNotifyPeriodEnds());
 
-                periodSelector.setText(String.format(Locale.getDefault(), "%d", geoInfo.getPeriodDays()));
+                TimeUnitWithValue timeUnitWithValue =
+                        DateHelper.determineTimeUnit(geoInfo.getPeriodMilliseconds());
+                TimeTitle timeUnit = timeUnitWithValue.getTimeUnit();
+                timeUnitSpinner.setSelection(timeUnit.getIndex());
+                periodSelector.setText(String.format(
+                        Locale.getDefault(),
+                        "%d",
+                        timeUnitWithValue.getValue()));
 
                 Date periodStart = geoInfo.getPeriodStart();
                 DateHelper.updatePicker(periodStart, datePicker);
@@ -153,12 +163,28 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
         deleteGeoInfoButton.setVisibility(View.GONE);
     }
 
-    private Integer getPeriod() {
+    private long convertPeriodToMilliseconds(long period, String timeUnit) {
+        switch (timeUnit) {
+            case "Seconds":
+                return TimeUnit.SECONDS.toMillis(period);
+            case "Minutes":
+                return TimeUnit.MINUTES.toMillis(period);
+            case "Hours":
+                return TimeUnit.HOURS.toMillis(period);
+            case "Days":
+                return TimeUnit.DAYS.toMillis(period);
+            default:
+                throw new RuntimeException(timeUnit + " not known");
+        }
+    }
+
+    private Long getPeriod() {
         Editable text = periodSelector.getText();
+        String timeUnit = (String) timeUnitSpinner.getSelectedItem();
         if (text == null || text.length() == 0)
             return null;
         try {
-            return Integer.parseInt(text.toString());
+            return convertPeriodToMilliseconds(Long.parseLong(text.toString()), timeUnit);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -212,21 +238,30 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
         boolean needNotify = notifyPeriodEndSwitch.isChecked();
         boolean clearEachPeriod = clearTimerEachPeriodSwitch.isChecked();
         if (needNotify || clearEachPeriod) {
-            Integer period = getPeriod();
+            Long period = getPeriod();
             if (period == null) {
                 Toast.makeText(this, "You should set period", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (period == 0) {
+            if (period == 0L) {
                 Toast.makeText(this, "You should set non-zero period", Toast.LENGTH_SHORT).show();
                 return;
             }
-            geoInfo.setPeriodDays(period);
+            geoInfo.setPeriodMilliseconds(period);
         }
         geoInfo.setNotifyPeriodEnds(needNotify);
         geoInfo.setClearTimerEachPeriod(clearEachPeriod);
 
-        Date startPeriod = DateHelper.createDate(datePicker);
+        Date startPeriod = DateHelper.extractDate(datePicker);
+        if (DateHelper.millisecondsBetween(
+                startPeriod,
+                DateHelper.now()) < 0L) {
+            Toast.makeText(this, String.format(
+                    "Start time %s is earlier now",
+                    DateUtils.formatDateTime(this, startPeriod.getTime(), 0)), Toast.LENGTH_SHORT)
+                    .show();
+            return;
+        }
         geoInfo.setPeriodStart(startPeriod);
 
         long id = geoInfo.save();

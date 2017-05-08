@@ -21,7 +21,7 @@ public class GeoInfo extends SugarRecord {
     private long spentTime;
     private Date periodStart;
     private Date lastLocationUpdate;
-    private int periodDays;
+    private long periodMilliseconds;
     private boolean enabled;
     private boolean notifyPeriodEnds;
     private boolean clearTimerEachPeriod;
@@ -72,14 +72,6 @@ public class GeoInfo extends SugarRecord {
 
     public void setPeriodStart(Date periodStart) {
         this.periodStart = periodStart;
-    }
-
-    public int getPeriodDays() {
-        return periodDays;
-    }
-
-    public void setPeriodDays(int periodDays) {
-        this.periodDays = periodDays;
     }
 
     public boolean isEnabled() {
@@ -141,5 +133,17 @@ public class GeoInfo extends SugarRecord {
         }
         this.lastLocationUpdate = lastLocationUpdate;
         return result;
+    }
+
+    public long getPeriodMilliseconds() {
+        return periodMilliseconds;
+    }
+
+    public void setPeriodMilliseconds(long periodMilliseconds) {
+        this.periodMilliseconds = periodMilliseconds;
+    }
+
+    public long getPeriodDays() {
+        return TimeUnit.MILLISECONDS.toDays(periodMilliseconds);
     }
 }

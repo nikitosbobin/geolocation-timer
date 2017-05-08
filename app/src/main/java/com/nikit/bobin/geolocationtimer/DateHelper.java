@@ -1,5 +1,7 @@
 package com.nikit.bobin.geolocationtimer;
 
+import android.content.Context;
+import android.text.format.DateUtils;
 import android.widget.DatePicker;
 
 import java.util.Calendar;
@@ -22,7 +24,7 @@ public final class DateHelper {
         return calendar.getTime();
     }
 
-    public static Date createDate(DatePicker datePicker) {
+    public static Date extractDate(DatePicker datePicker) {
         return createDate(
                 datePicker.getYear(),
                 datePicker.getMonth(),
@@ -70,4 +72,29 @@ public final class DateHelper {
                 instance.get(Calendar.MONTH),
                 instance.get(Calendar.DAY_OF_MONTH));
     }
+
+    public static TimeUnitWithValue determineTimeUnit(long milliseconds) {
+        long days = TimeUnit.MILLISECONDS.toDays(milliseconds);
+        if (days != 0L)
+            return new TimeUnitWithValue(TimeTitle.Day, days);
+
+        long hours = TimeUnit.MILLISECONDS.toHours(milliseconds);
+        if (hours != 0L)
+            return new TimeUnitWithValue(TimeTitle.Hour, hours);
+
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds);
+        if (minutes != 0L)
+            return new TimeUnitWithValue(TimeTitle.Minute, minutes);
+
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds);
+        if (seconds != 0L)
+            return new TimeUnitWithValue(TimeTitle.Second, seconds);
+
+        return new TimeUnitWithValue(TimeTitle.Second, 0L);
+    }
+
+    public static String formatPeriodStart(Context context, GeoInfo geoInfo) {
+        return DateUtils.formatDateTime(context, geoInfo.getPeriodStart().getTime(), 0);
+    }
 }
+

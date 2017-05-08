@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.util.TimeUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -40,8 +41,9 @@ public class LocationWatcher extends Service
                 .build();
 
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(TimeUnit.MINUTES.toMillis(10));
-        locationRequest.setFastestInterval(TimeUnit.MINUTES.toMillis(2));
+        locationRequest.setInterval(TimeUnit.SECONDS.toMillis(5));
+        //locationRequest.setInterval(TimeUnit.MINUTES.toMillis(10));
+        //locationRequest.setFastestInterval(TimeUnit.MINUTES.toMillis(2));
         Log.d("LocationWatcher", "onCreate");
     }
 
@@ -83,7 +85,13 @@ public class LocationWatcher extends Service
         Date now = DateHelper.now();
         boolean anyEdit = false;
         for (GeoInfo geoInfo : geoInfos) {
-            if (!geoInfo.isEnabled()) {
+            if (!geoInfo.isEnabled() ||
+                    DateHelper.millisecondsBetween(
+                            DateHelper.now(),
+                            geoInfo.getPeriodStart()) < 0L) {
+                Log.d("LocationWatcher", String.format(
+                        "Start time %s is earlier now",
+                        DateUtils.formatDateTime(this, geoInfo.getPeriodStart().getTime(), 0)));
                 geoInfo.setLastLocationUpdate(null);
                 geoInfo.save();
                 continue;

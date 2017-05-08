@@ -20,8 +20,7 @@
     <string-array name="time_units">
         <item>Seconds</item>
         <item>Minutes</item>
+        <item>Hours</item>
         <item>Days</item>
-        <item>Weeks</item>
-        <item>Months</item>
     </string-array>
 </resources>
