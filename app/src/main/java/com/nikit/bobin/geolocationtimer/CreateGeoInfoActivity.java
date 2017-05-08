@@ -1,19 +1,12 @@
 package com.nikit.bobin.geolocationtimer;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -21,18 +14,15 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.StringTokenizer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnFocusChange;
 
 public class CreateGeoInfoActivity extends AppCompatActivity {
     private static final int GET_LOCATION_REQUEST_CODE = 12;
@@ -60,6 +50,8 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
     Switch geoInfoEnabledSwitch;
     @BindView(R.id.delete_button)
     Button deleteGeoInfoButton;
+    @BindView(R.id.reset_timer_button)
+    Button resetTimerButton;
     @BindView(R.id.time_unit_spinner)
     Spinner timeUnitSpinner;
 
@@ -74,31 +66,53 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
         loadFromIntent();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
     }
 
     @OnClick(R.id.location_label)
     public void getLocation() {
         Intent intent = new Intent(this, MapsActivity.class);
         if (latitude != 0D && longitude != 0D) {
-            intent.putExtra(MapsActivity.LATITUDE, latitude);
-            intent.putExtra(MapsActivity.LONGITUDE, longitude);
+            intent.putExtra(MapsActivity.DYNAMIC_LATITUDE, latitude);
+            intent.putExtra(MapsActivity.DYNAMIC_LONGITUDE, longitude);
         }
+
+        List<GeoInfo> geoInfos;
+        if (loadedGeoInfo == null || loadedGeoInfo.getId() < 1)
+            geoInfos = GeoInfo.listAll(GeoInfo.class);
+        else
+            geoInfos = GeoInfo.find(GeoInfo.class, "id!=?", loadedGeoInfo.getId().toString());
+        double[] latitudes = new double[geoInfos.size()];
+        double[] longitudes = new double[latitudes.length];
+        String[] titles = new String[latitudes.length];
+        float[] colors = new float[latitudes.length];
+        for (int i = 0; i < latitudes.length; ++i) {
+            GeoInfo currentGeoInfo = geoInfos.get(i);
+            latitudes[i] = currentGeoInfo.getLatitude();
+            longitudes[i] = currentGeoInfo.getLongitude();
+            titles[i] = currentGeoInfo.getTitle();
+            colors[i] = BitmapDescriptorFactory.HUE_CYAN;
+        }
+
+        intent.putExtra(MapsActivity.STATIC_LATITUDES, latitudes);
+        intent.putExtra(MapsActivity.STATIC_LONGITUDES, longitudes);
+        intent.putExtra(MapsActivity.STATIC_TITLES, titles);
+        intent.putExtra(MapsActivity.STATIC_COLORS, colors);
+
         startActivityForResult(intent, GET_LOCATION_REQUEST_CODE);
+    }
+
+    @OnClick(R.id.reset_timer_button)
+    public void resetTimer() {
+        loadedGeoInfo.resetSpentTime();
+        loadedGeoInfo.save();
+        Toast.makeText(this, "Timer was reset", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == GET_LOCATION_REQUEST_CODE && resultCode == RESULT_OK) {
-            latitude = data.getDoubleExtra(MapsActivity.LATITUDE, 0D);
-            longitude = data.getDoubleExtra(MapsActivity.LONGITUDE, 0D);
+            latitude = data.getDoubleExtra(MapsActivity.DYNAMIC_LATITUDE, 0D);
+            longitude = data.getDoubleExtra(MapsActivity.DYNAMIC_LONGITUDE, 0D);
             Address address = locationHelper.getAddress(latitude, longitude);
             if (address != null)
                 locationLabel.setText(address.getAddressLine(0));
@@ -131,9 +145,11 @@ public class CreateGeoInfoActivity extends AppCompatActivity {
                 DateHelper.updatePicker(periodStart, datePicker);
 
                 deleteGeoInfoButton.setVisibility(View.VISIBLE);
+                resetTimerButton.setVisibility(View.VISIBLE);
                 return;
             }
         }
+        resetTimerButton.setVisibility(View.GONE);
         deleteGeoInfoButton.setVisibility(View.GONE);
     }
 

@@ -116,5 +116,14 @@
             android:layout_marginTop="9dp"
             android:layout_alignEnd="@+id/geo_info_title"
             android:layout_toEndOf="@+id/period_selector" />
+
+        <Button
+            android:id="@+id/reset_timer_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/geo_info_enabled_switch"
+            android:layout_alignTop="@+id/delete_button"
+            android:layout_marginStart="15dp"
+            android:text="@string/reset_timer" />
     </RelativeLayout>
 </android.support.v4.widget.NestedScrollView>

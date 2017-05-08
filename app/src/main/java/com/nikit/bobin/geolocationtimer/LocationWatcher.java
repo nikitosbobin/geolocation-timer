@@ -91,13 +91,12 @@ public class LocationWatcher extends Service
             float distance = location.distanceTo(geoInfo.getLocation());
             Log.d("LocationWatcher", geoInfo.getTitle() + " " + distance);
             if (distance < 100F) {
-                if (geoInfo.setLastLocationUpdate(now)) {
+                if (geoInfo.setLastLocationUpdate(now))
                     anyEdit = true;
-                }
-                geoInfo.save();
             } else {
                 geoInfo.setLastLocationUpdate(null);
             }
+            geoInfo.save();
         }
         Intent locationWatcherNotify = new Intent(BROADCAST_ACTION);
         locationWatcherNotify.putExtra(BROADCAST_RES, anyEdit);

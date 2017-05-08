@@ -126,6 +126,10 @@ public class GeoInfo extends SugarRecord {
         return lastLocationUpdate;
     }
 
+    public void resetSpentTime() {
+        spentTime = 0L;
+    }
+
     public boolean setLastLocationUpdate(Date lastLocationUpdate) {
         boolean result = false;
         if (this.lastLocationUpdate != null && lastLocationUpdate != null) {
